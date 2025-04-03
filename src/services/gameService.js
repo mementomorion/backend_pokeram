@@ -1,8 +1,8 @@
 const db = require('../utils/db');
 const gameLogic = require('../utils/gameLogic');
 
-const handleMessage = (ws, roomId, message) => {
-    const room = db.getRoomById(roomId);
+const handleMessage = async (ws, roomId, message) => {
+    const room = await db.getRoomById(roomId);
     if (!room) {
         ws.send(JSON.stringify({ type: 'error', message: 'Room not found' }));
         return;
@@ -15,6 +15,8 @@ const handleMessage = (ws, roomId, message) => {
                     throw new Error('Player ID and username are required');
                 }
                 gameLogic.joinRoom(room, message.playerId, message.username);
+                ws.playerId = message.playerId;
+                ws.send(JSON.stringify({ type: 'join_success' }));
                 break;
             case 'leave':
                 if (!message.playerId) {
@@ -39,8 +41,8 @@ const handleMessage = (ws, roomId, message) => {
     }
 };
 
-const handleDisconnect = (ws, roomId) => {
-    const room = db.getRoomById(roomId);
+const handleDisconnect = async (ws, roomId) => {
+    const room = await db.getRoomById(roomId);
     if (!room) return;
 
     const playerId = ws.playerId;
@@ -52,7 +54,7 @@ const handleDisconnect = (ws, roomId) => {
     broadcastGameState(roomId, gameState);
 };
 
-const broadcastGameState = (roomId, gameState) => {
+const broadcastGameState = async (roomId, gameState) => {
     const clients = db.getClientsByRoomId(roomId);
     if (!clients) {
         console.error(`No clients found for room ${roomId}`);
