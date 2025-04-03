@@ -46,6 +46,9 @@ const saveRoom = async (room) => {
     return res.rows[0];
 };
 
+// Object to store clients by roomId
+const clients = new Map();
+
 const addClientToRoom = (roomId, client) => {
     if (!clients.has(roomId)) {
         clients.set(roomId, []);

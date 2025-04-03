@@ -16,7 +16,7 @@ app.use(bodyParser.json());
 
 app.use(authRoutes);
 app.use(roomRoutes);
-app.use(gameRoutes); // Подключение маршрутов WebSocket
+gameRoutes(app);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

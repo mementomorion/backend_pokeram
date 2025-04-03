@@ -9,6 +9,10 @@ const joinRoom = (room, playerId, username) => {
         throw new Error('Room is full');
     }
 
+    if (!room.players) {
+        room.players = [];
+    }
+
     const player = { id: playerId, username: username, chips: 1000, hand: [], isFolded: false, bet: 0 };
     room.players.push(player);
     room.playerCount += 1;
@@ -20,6 +24,8 @@ const joinRoom = (room, playerId, username) => {
 };
 
 const leaveRoom = (room, playerId) => {
+    if (!room.players) return;
+
     room.players = room.players.filter(player => player.id !== playerId);
     room.playerCount -= 1;
 
@@ -86,10 +92,10 @@ const getGameState = (room) => {
         })),
         communityCards: room.communityCards,
         pot: room.pot,
-        currentPlayer: room.players[room.currentPlayerIndex].id,
-        dealer: room.players[room.dealerIndex].id,
-        smallBlind: room.players[room.smallBlindIndex].id,
-        bigBlind: room.players[room.bigBlindIndex].id,
+        currentPlayer: room.players[room.currentPlayerIndex]?.id || null,
+        dealer: room.players[room.dealerIndex]?.id || null,
+        smallBlind: room.players[room.smallBlindIndex]?.id || null,
+        bigBlind: room.players[room.bigBlindIndex]?.id || null,
         phase: room.phase,
         currentBet: room.currentBet,
         timeLeft: room.timeLeft
@@ -212,8 +218,10 @@ const determineWinner = (room) => {
         return bestPlayer;
     }, null);
 
-    winner.player.chips += room.pot;
-    room.pot = 0;
+    if (winner) {
+        winner.player.chips += room.pot;
+        room.pot = 0;
+    }
 
     room.status = 'finished';
     room.phase = 'waiting';

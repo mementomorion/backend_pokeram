@@ -11,12 +11,21 @@ const handleMessage = (ws, roomId, message) => {
     try {
         switch (message.type) {
             case 'join':
+                if (!message.playerId || !message.username) {
+                    throw new Error('Player ID and username are required');
+                }
                 gameLogic.joinRoom(room, message.playerId, message.username);
                 break;
             case 'leave':
+                if (!message.playerId) {
+                    throw new Error('Player ID is required');
+                }
                 gameLogic.leaveRoom(room, message.playerId);
                 break;
             case 'action':
+                if (!message.playerId || !message.action) {
+                    throw new Error('Player ID and action are required');
+                }
                 gameLogic.handleAction(room, message.playerId, message.action, message.amount);
                 break;
             default:
@@ -35,6 +44,8 @@ const handleDisconnect = (ws, roomId) => {
     if (!room) return;
 
     const playerId = ws.playerId;
+    if (!playerId) return;
+
     gameLogic.leaveRoom(room, playerId);
 
     const gameState = gameLogic.getGameState(room);
@@ -43,6 +54,10 @@ const handleDisconnect = (ws, roomId) => {
 
 const broadcastGameState = (roomId, gameState) => {
     const clients = db.getClientsByRoomId(roomId);
+    if (!clients) {
+        console.error(`No clients found for room ${roomId}`);
+        return;
+    }
     clients.forEach(client => {
         client.send(JSON.stringify({ type: 'game_state', state: gameState }));
     });
