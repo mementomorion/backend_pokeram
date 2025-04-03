@@ -16,7 +16,7 @@ const handleMessage = async (ws, roomId, message) => {
                 }
                 gameLogic.joinRoom(room, message.playerId, message.username);
                 ws.playerId = message.playerId;
-                ws.send(JSON.stringify({ type: 'join_success' }));
+                ws.send(JSON.stringify({ type: 'join_success', message: 'Successfully joined the game!' }));
                 break;
             case 'leave':
                 if (!message.playerId) {
